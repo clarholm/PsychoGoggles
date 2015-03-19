@@ -148,9 +148,9 @@ void drawSpectrum () {
        strip.show();
       }
       
-      if (disX == 2 && sampleR[disX+1] > 3 && sampleR[disX+1] > currentRmaxBin0){
+      if (disX == 2 && sampleR[disX+1] > 3 && sampleR[disX+1] > currentRmaxBin2){
         
-        currentRmaxBin0 = sampleR[disX+1];
+        currentRmaxBin2 = sampleR[disX+1];
         //Serial.print("increse");
         //Serial.println(currentLmaxBin0);
         brightness = currentRmaxBin2 * 5;
