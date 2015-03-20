@@ -53,6 +53,14 @@ int iterationsWithColorBin0 = 0;
 int iterationsWithColorBin2 = 0;
 int colorBin0 = 0;
 int colorBin2 = 0;
+int Bin0BrightnessScaler = 2;
+int Bin2BrightnessScaler = 6;
+int Bin0currentFadeRate = 3;
+int Bin2currentFadeRate = 3;
+int Bin0colorChangeRate = 2;
+int Bin2colorChangeRate = 2;
+int Bin0Binscaler = 0;
+int Bin2Binscaler = -1;
 
 void setup() {
   if (displayType == "MONO") {displaySize = 32;} else {displaySize = 16;}
@@ -103,104 +111,20 @@ void drawSpectrum () {
     //makeColor();
     //Serial.println(color[0]);
     for (disX; disX < 16; disX++) {
-   /*
-      //MODE 1   
+ 
    //bin 0   
-      if (disX == 0 && sampleL[disX+1] > 3 && sampleL[disX+1] > currentLmaxBin0){
+      if (disX == 0 && sampleL[disX+Bin0Binscaler] > 3 && sampleL[disX+Bin0Binscaler] > currentLmaxBin0){
         
-        currentLmaxBin0 = sampleL[disX+1];
-        color= -Wheel(currentLmaxBin0*10);
-        //Serial.print("increse");
-        //Serial.println(currentLmaxBin0);
-        brightness = currentLmaxBin0 * 5;
-        
-        
-        strip.setPixelColor(0, (brightness*(color/256)));
-        strip.show();
-      }
-      if (disX == 0 && sampleL[disX+1] < currentLmaxBin0){
-       
-        currentLmaxBin0 = currentLmaxBin0 - 1;
-        //Serial.print("decrease");
-        //Serial.println(currentLmaxBin0);
-       brightness = currentLmaxBin0 * 5;
-       strip.setPixelColor(0, (brightness*(color/256)));
-       strip.show();
-      }
-      
-      if (disX == 0 && sampleR[disX+1] > 3 && sampleR[disX+1] > currentRmaxBin0){
-        
-        currentRmaxBin0 = sampleR[disX+1];
-        //Serial.print("increse");
-        //Serial.println(currentLmaxBin0);
-        brightness = currentRmaxBin0 * 5;
-        strip.setPixelColor(1, (brightness*(color/256)));
-        strip.show();
-      }
-      if (disX == 0 && sampleR[disX+1] < currentRmaxBin0){
-       
-        currentRmaxBin0 = currentRmaxBin0 - 1;
-        //Serial.print("decrease");
-        //Serial.println(currentLmaxBin0);
-       brightness = currentRmaxBin0 * 5;
-       strip.setPixelColor(1, (brightness*(color/256)));
-       strip.show();
-      }
-      //bin 2   
-      if (disX == 2 && sampleL[disX+1] > 3 && sampleL[disX+1] > currentLmaxBin2){
-        
-        currentLmaxBin2 = sampleL[disX+1];
-        //Serial.print("increse");
-        //Serial.println(currentLmaxBin0);
-        brightness = currentLmaxBin2 * 5;
-        strip.setPixelColor(2, (brightness*(color/256)));
-        strip.show();
-      }
-      if (disX == 2 && sampleL[disX+1] < currentLmaxBin2){
-       
-        currentLmaxBin2 = currentLmaxBin2 - 1;
-        //Serial.print("decrease");
-        //Serial.println(currentLmaxBin0);
-       brightness = currentLmaxBin2 * 5;
-       strip.setPixelColor(2, (brightness*(color/256)));
-       strip.show();
-      }
-      
-      if (disX == 2 && sampleR[disX+1] > 3 && sampleR[disX+1] > currentRmaxBin2){
-        
-        currentRmaxBin2 = sampleR[disX+1];
-        //Serial.print("increse");
-        //Serial.println(currentLmaxBin0);
-        brightness = currentRmaxBin2 * 5;
-        strip.setPixelColor(3, (brightness*(color/256)));
-        strip.show();
-      }
-      if (disX == 2 && sampleR[disX+1] < currentRmaxBin2){
-       
-        currentRmaxBin2 = currentRmaxBin2 - 1;
-        //Serial.print("decrease");
-        //Serial.println(currentLmaxBin0);
-       brightness = currentRmaxBin2 * 5;
-       strip.setPixelColor(3, (brightness*(color/256)));
-       strip.show();
-      }
-         
-      }
-      */
-      //MODE 2   
-   //bin 0   
-      if (disX == 0 && sampleL[disX+1] > 3 && sampleL[disX+1] > currentLmaxBin0){
-        
-        currentLmaxBin0 = sampleL[disX+1];
-        brightness = currentLmaxBin0 * 5;
+        currentLmaxBin0 = sampleL[disX+Bin0Binscaler];
+        brightness = currentLmaxBin0 * Bin0BrightnessScaler;
         
         if(iterationsWithColorBin0 > 10){
-        colornumberBin0 = colornumberBin0+currentLmaxBin0;
+        colornumberBin0 = colornumberBin0+(currentLmaxBin0/Bin0colorChangeRate);
         if (colornumberBin0 > 255){
           colornumberBin0 = 0;
         }
         //colorBin0 = (Wheel(colornumberBin0) % 255);
-        //Serial.println(colornumberBin0);
+        Serial.println(currentLmaxBin0);
         //Serial.print("GBin0 = ");
         //Serial.println(GBin0);
         //Serial.print("RBin0 = ");
@@ -216,75 +140,136 @@ void drawSpectrum () {
         //strip.setPixelColor(0, ((brightness*(GBin0+currentLmaxBin0*3))/255) , ((brightness*(RBin0+currentLmaxBin0*8))/255) , ((brightness*(BBin0+currentLmaxBin0*3))/255));
         //strip.show();
       }
-      if (disX == 0 && sampleL[disX+1] < currentLmaxBin0){
+      if (disX == 0 && sampleL[disX+Bin0Binscaler] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate > 0){
        
-        currentLmaxBin0 = currentLmaxBin0 - 1;
+        currentLmaxBin0 = currentLmaxBin0 - Bin0currentFadeRate;
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
-       brightness = currentLmaxBin0 * 5;
+       brightness = currentLmaxBin0 * Bin0BrightnessScaler;
        setPixelColorAndBrightness(brightness, 0, 0);
        //strip.setPixelColor(0, ((brightness*(GBin0+currentLmaxBin0*3))/255) , ((brightness*(RBin0+currentLmaxBin0*8))/255) , ((brightness*(BBin0+currentLmaxBin0*3))/255));
        //strip.show();
       }
+        if (disX == 0 && sampleL[disX+Bin0Binscaler] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate <= 0){
+        Serial.println("Set currentLmaxBin0 to 0");
+        currentLmaxBin0 = 0;
+        Serial.println(currentLmaxBin0);
+        //Serial.print("decrease");
+        //Serial.println(currentLmaxBin0);
+       brightness = currentLmaxBin0 * Bin0BrightnessScaler;
+       setPixelColorAndBrightness(brightness, 0, 0);
+       //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
+       //strip.show();
+      }
       
-      if (disX == 0 && sampleR[disX+1] > 3 && sampleR[disX+1] > currentRmaxBin0){
+      if (disX == 0 && sampleR[disX+Bin0Binscaler] > 3 && sampleR[disX+Bin0Binscaler] > currentRmaxBin0){
         
-        currentRmaxBin0 = sampleR[disX+1];
+        currentRmaxBin0 = sampleR[disX+Bin0Binscaler];
         //Serial.print("increse");
         //Serial.println(currentLmaxBin0);
-        brightness = currentRmaxBin0 * 5;
+        brightness = currentRmaxBin0 * Bin0BrightnessScaler;
         setPixelColorAndBrightness(brightness, 0, 1);
         //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
         //strip.show();
       }
-      if (disX == 0 && sampleR[disX+1] < currentRmaxBin0){
-       
-        currentRmaxBin0 = currentRmaxBin0 - 1;
+      if (disX == 0 && sampleR[disX+Bin0Binscaler] < currentRmaxBin0 && currentRmaxBin0-Bin0currentFadeRate > 0){
+        Serial.println("Bin0 should decrease");
+        currentRmaxBin0 = currentRmaxBin0 - Bin0currentFadeRate;
+        Serial.println(currentRmaxBin0);
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
-       brightness = currentRmaxBin0 * 5;
+       brightness = currentRmaxBin0 * Bin0BrightnessScaler;
+       setPixelColorAndBrightness(brightness, 0, 1);
+       //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
+       //strip.show();
+      }
+       if (disX == 0 && sampleR[disX+Bin0Binscaler] < currentRmaxBin0 && currentRmaxBin0-Bin0currentFadeRate <= 0){
+        Serial.println("Set currentRmaxBin0 to 0");
+        currentRmaxBin0 = 0;
+        Serial.println(currentRmaxBin0);
+        //Serial.print("decrease");
+        //Serial.println(currentLmaxBin0);
+       brightness = currentRmaxBin0 * Bin0BrightnessScaler;
        setPixelColorAndBrightness(brightness, 0, 1);
        //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
        //strip.show();
       }
       //bin 2   
-      if (disX == 2 && sampleL[disX+1] > 3 && sampleL[disX+1] > currentLmaxBin2){
+      if (disX == 2 && sampleL[disX+Bin2Binscaler] > 3 && sampleL[disX+Bin2Binscaler] > currentLmaxBin2){
         
-        currentLmaxBin2 = sampleL[disX+1];
-        //Serial.print("increse");
-        //Serial.println(currentLmaxBin0);
-        brightness = currentLmaxBin2 * 8;
-        strip.setPixelColor(2, ((brightness*(GBin2+currentLmaxBin2*3))/255) , ((brightness*(RBin2+currentLmaxBin2*8))/255) , ((brightness*(BBin2+currentLmaxBin2*3))/255));
-        strip.show();
+        currentLmaxBin2 = sampleL[disX+Bin2Binscaler];
+         brightness = currentLmaxBin2 * Bin2BrightnessScaler;
+        
+        if(iterationsWithColorBin2 > 10){
+        colornumberBin2 = colornumberBin2+(currentLmaxBin2/Bin2colorChangeRate);
+        if (colornumberBin2 > 255){
+          colornumberBin2 = 0;
+        }
+        //colorBin0 = (Wheel(colornumberBin0) % 255);
+        //Serial.println(colornumberBin0);
+        //Serial.print("GBin0 = ");
+        //Serial.println(GBin0);
+        //Serial.print("RBin0 = ");
+        //Serial.println(RBin0);
+        //Serial.print("BBin0 = ");
+        //Serial.println(BBin0);
+
+        WheelBin2(colornumberBin2);
+        iterationsWithColorBin2 = 0;
+        }
+        iterationsWithColorBin2 = iterationsWithColorBin2 + 1;
+        setPixelColorAndBrightness(brightness, 2, 2);
+
+      
       }
-      if (disX == 2 && sampleL[disX+1] < currentLmaxBin2){
+      if (disX == 2 && sampleL[disX+Bin2Binscaler] < currentLmaxBin2  && currentLmaxBin2-Bin2currentFadeRate > 0){
        
-        currentLmaxBin2 = currentLmaxBin2 - 1;
+        currentLmaxBin2 = currentLmaxBin2 - Bin2currentFadeRate;
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
-       brightness = currentLmaxBin2 * 8;
-       strip.setPixelColor(2, ((brightness*(GBin2+currentLmaxBin2*3))/255) , ((brightness*(RBin2+currentLmaxBin2*8))/255) , ((brightness*(BBin2+currentLmaxBin2*3))/255));
-       strip.show();
+       brightness = currentLmaxBin2 * Bin2BrightnessScaler;
+       setPixelColorAndBrightness(brightness, 2, 2);
       }
       
-      if (disX == 2 && sampleR[disX+1] > 3 && sampleR[disX+1] > currentRmaxBin2){
-        
-        currentRmaxBin2 = sampleR[disX+1];
-        //Serial.print("increse");
-        //Serial.println(currentLmaxBin0);
-        brightness = currentRmaxBin2 * 8;
-        strip.setPixelColor(3, ((brightness*(GBin2+currentRmaxBin2*3))/255) , ((brightness*(RBin2+currentRmaxBin2*8))/255) , ((brightness*(BBin2+currentRmaxBin2*3))/255));
-        strip.show();
-      }
-      if (disX == 2 && sampleR[disX+1] < currentRmaxBin2){
-       
-        currentRmaxBin2 = currentRmaxBin2 - 1;
+      if (disX == 0 && sampleL[disX+Bin2Binscaler] < currentLmaxBin2 && currentLmaxBin2-Bin2currentFadeRate <= 0){
+        Serial.println("Set currentLmaxBin2 to 0");
+        currentLmaxBin2 = 0;
+        Serial.println(currentLmaxBin2);
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
-       brightness = currentRmaxBin2 * 8;
-       strip.setPixelColor(3, ((brightness*(GBin2+currentRmaxBin2*3))/255) , ((brightness*(RBin2+currentRmaxBin2*8))/255) , ((brightness*(BBin2+currentRmaxBin2*3))/255));
-       strip.show();
+       brightness = currentLmaxBin2 * Bin0BrightnessScaler;
+       setPixelColorAndBrightness(brightness, 2, 2);
+       //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
+       //strip.show();
       }
+      if (disX == 2 && sampleR[disX+Bin2Binscaler] > 3 && sampleR[disX+Bin2Binscaler] > currentRmaxBin2){
+        
+        currentRmaxBin2 = sampleR[disX+Bin2Binscaler];
+        //Serial.print("increse");
+        //Serial.println(currentLmaxBin0);
+        brightness = currentRmaxBin2 * Bin2BrightnessScaler;
+         setPixelColorAndBrightness(brightness, 2, 3);
+      }
+      if (disX == 2 && sampleR[disX+Bin2Binscaler] < currentRmaxBin2  && currentRmaxBin2-Bin2currentFadeRate > 0){
+       
+        currentRmaxBin2 = currentRmaxBin2 - Bin2currentFadeRate;
+        //Serial.print("decrease");
+        //Serial.println(currentLmaxBin0);
+       brightness = currentRmaxBin2  * Bin2BrightnessScaler;
+       setPixelColorAndBrightness(brightness, 2, 3);
+      }
+      if (disX == 0 && sampleR[disX+Bin2Binscaler] < currentRmaxBin2 && currentRmaxBin2-Bin2currentFadeRate <= 0){
+        Serial.println("Set currentLmaxBin2 to 0");
+        currentRmaxBin2 = 0;
+        Serial.println(currentRmaxBin2);
+        //Serial.print("decrease");
+        //Serial.println(currentLmaxBin0);
+       brightness = currentRmaxBin2 * Bin2BrightnessScaler;
+       setPixelColorAndBrightness(brightness, 2, 3);
+       //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
+       //strip.show();
+      }
+      
          
       }
       
@@ -309,6 +294,10 @@ void drawSpectrum () {
 void setPixelColorAndBrightness(int brightness, int bin, int pixelnumber){
   if (bin == 0){
 strip.setPixelColor(pixelnumber,  ((brightness*GBin0)/255) , ((brightness*RBin0)/255) , ((brightness*BBin0)/255));
+strip.show();
+  }
+  else if (bin == 2){
+strip.setPixelColor(pixelnumber,  ((brightness*GBin2)/255) , ((brightness*RBin2)/255) , ((brightness*BBin2)/255));
 strip.show();
   }
 }
@@ -441,6 +430,24 @@ void WheelBin0(byte WheelPos) {
    GBin0 = 0;
    RBin0 = WheelPos * 3;
    BBin0 = 255 - WheelPos * 3;
+  }
+}
+
+void WheelBin2(byte WheelPos) {
+  if(WheelPos < 85) {
+    GBin2 = WheelPos * 3;
+    RBin2 = 255 - WheelPos * 3;
+    BBin2 = 0;
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   GBin2 = 255 - WheelPos * 3;
+   RBin2 = 0;
+   BBin2 = WheelPos * 3;
+  } else {
+   WheelPos -= 170;
+   GBin2 = 0;
+   RBin2 = WheelPos * 3;
+   BBin2 = 255 - WheelPos * 3;
   }
 }
 
