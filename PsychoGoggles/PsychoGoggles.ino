@@ -40,9 +40,12 @@ byte currentLmaxBin0 = 0;
 byte currentRmaxBin0 = 0;
 byte currentLmaxBin2 = 0;
 byte currentRmaxBin2 = 0;
-
-
-
+int GBin0=150;
+int RBin0=60;
+int BBin0=120;
+int GBin2=0;
+int RBin2=130;
+int BBin2=100;
 void setup() {
   if (displayType == "MONO") {displaySize = 32;} else {displaySize = 16;}
   //TIMSK0 = 0; // turn off timer0 for lower jitter
@@ -84,20 +87,26 @@ void loop() {
 
 
 void drawSpectrum () {
-
+  int color;
   if (displaySize == 16) {
     //Serial.println("Start ");
     int disX = 0;
+    //makeColor();
+    //Serial.println(color[0]);
     for (disX; disX < 16; disX++) {
-      
+   /*
+      //MODE 1   
    //bin 0   
       if (disX == 0 && sampleL[disX+1] > 3 && sampleL[disX+1] > currentLmaxBin0){
         
         currentLmaxBin0 = sampleL[disX+1];
+        color= -Wheel(currentLmaxBin0*10);
         //Serial.print("increse");
         //Serial.println(currentLmaxBin0);
         brightness = currentLmaxBin0 * 5;
-        strip.setPixelColor(0, (brightness*255/255) , (brightness*0/255), (brightness*100/255));
+        
+        
+        strip.setPixelColor(0, (brightness*(color/256)));
         strip.show();
       }
       if (disX == 0 && sampleL[disX+1] < currentLmaxBin0){
@@ -106,7 +115,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentLmaxBin0 * 5;
-       strip.setPixelColor(0, (brightness*255/255) , (brightness*0/255), (brightness*100/255));
+       strip.setPixelColor(0, (brightness*(color/256)));
        strip.show();
       }
       
@@ -116,7 +125,7 @@ void drawSpectrum () {
         //Serial.print("increse");
         //Serial.println(currentLmaxBin0);
         brightness = currentRmaxBin0 * 5;
-        strip.setPixelColor(1, (brightness*255/255) , (brightness*0/255), (brightness*100/255));
+        strip.setPixelColor(1, (brightness*(color/256)));
         strip.show();
       }
       if (disX == 0 && sampleR[disX+1] < currentRmaxBin0){
@@ -125,7 +134,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentRmaxBin0 * 5;
-       strip.setPixelColor(1, (brightness*255/255) , (brightness*0/255), (brightness*100/255));
+       strip.setPixelColor(1, (brightness*(color/256)));
        strip.show();
       }
       //bin 2   
@@ -135,7 +144,7 @@ void drawSpectrum () {
         //Serial.print("increse");
         //Serial.println(currentLmaxBin0);
         brightness = currentLmaxBin2 * 5;
-        strip.setPixelColor(2, (brightness*255/255) , (brightness*0/255), (brightness*100/255));
+        strip.setPixelColor(2, (brightness*(color/256)));
         strip.show();
       }
       if (disX == 2 && sampleL[disX+1] < currentLmaxBin2){
@@ -144,7 +153,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentLmaxBin2 * 5;
-       strip.setPixelColor(2, (brightness*255/255) , (brightness*0/255), (brightness*100/255));
+       strip.setPixelColor(2, (brightness*(color/256)));
        strip.show();
       }
       
@@ -154,7 +163,7 @@ void drawSpectrum () {
         //Serial.print("increse");
         //Serial.println(currentLmaxBin0);
         brightness = currentRmaxBin2 * 5;
-        strip.setPixelColor(3, (brightness*255/255) , (brightness*0/255), (brightness*100/255));
+        strip.setPixelColor(3, (brightness*(color/256)));
         strip.show();
       }
       if (disX == 2 && sampleR[disX+1] < currentRmaxBin2){
@@ -163,7 +172,89 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentRmaxBin2 * 5;
-       strip.setPixelColor(3, (brightness*255/255) , (brightness*0/255), (brightness*100/255));
+       strip.setPixelColor(3, (brightness*(color/256)));
+       strip.show();
+      }
+         
+      }
+      */
+      //MODE 2   
+   //bin 0   
+      if (disX == 0 && sampleL[disX+1] > 3 && sampleL[disX+1] > currentLmaxBin0){
+        
+        currentLmaxBin0 = sampleL[disX+1];
+        //Serial.print("increse");
+        //Serial.println(currentLmaxBin0);
+        brightness = currentLmaxBin0 * 5;
+        
+        
+        strip.setPixelColor(0, ((brightness*(GBin0+currentLmaxBin0*3))/255) , ((brightness*(RBin0+currentLmaxBin0*8))/255) , ((brightness*(BBin0+currentLmaxBin0*3))/255));
+        strip.show();
+      }
+      if (disX == 0 && sampleL[disX+1] < currentLmaxBin0){
+       
+        currentLmaxBin0 = currentLmaxBin0 - 1;
+        //Serial.print("decrease");
+        //Serial.println(currentLmaxBin0);
+       brightness = currentLmaxBin0 * 8;
+       strip.setPixelColor(0, ((brightness*(GBin0+currentLmaxBin0*3))/255) , ((brightness*(RBin0+currentLmaxBin0*8))/255) , ((brightness*(BBin0+currentLmaxBin0*3))/255));
+       strip.show();
+      }
+      
+      if (disX == 0 && sampleR[disX+1] > 3 && sampleR[disX+1] > currentRmaxBin0){
+        
+        currentRmaxBin0 = sampleR[disX+1];
+        //Serial.print("increse");
+        //Serial.println(currentLmaxBin0);
+        brightness = currentRmaxBin0 * 8;
+        strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
+        strip.show();
+      }
+      if (disX == 0 && sampleR[disX+1] < currentRmaxBin0){
+       
+        currentRmaxBin0 = currentRmaxBin0 - 1;
+        //Serial.print("decrease");
+        //Serial.println(currentLmaxBin0);
+       brightness = currentRmaxBin0 * 8;
+       strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
+       strip.show();
+      }
+      //bin 2   
+      if (disX == 2 && sampleL[disX+1] > 3 && sampleL[disX+1] > currentLmaxBin2){
+        
+        currentLmaxBin2 = sampleL[disX+1];
+        //Serial.print("increse");
+        //Serial.println(currentLmaxBin0);
+        brightness = currentLmaxBin2 * 8;
+        strip.setPixelColor(2, ((brightness*(GBin2+currentLmaxBin2*3))/255) , ((brightness*(RBin2+currentLmaxBin2*8))/255) , ((brightness*(BBin2+currentLmaxBin2*3))/255));
+        strip.show();
+      }
+      if (disX == 2 && sampleL[disX+1] < currentLmaxBin2){
+       
+        currentLmaxBin2 = currentLmaxBin2 - 1;
+        //Serial.print("decrease");
+        //Serial.println(currentLmaxBin0);
+       brightness = currentLmaxBin2 * 8;
+       strip.setPixelColor(2, ((brightness*(GBin2+currentLmaxBin2*3))/255) , ((brightness*(RBin2+currentLmaxBin2*8))/255) , ((brightness*(BBin2+currentLmaxBin2*3))/255));
+       strip.show();
+      }
+      
+      if (disX == 2 && sampleR[disX+1] > 3 && sampleR[disX+1] > currentRmaxBin2){
+        
+        currentRmaxBin2 = sampleR[disX+1];
+        //Serial.print("increse");
+        //Serial.println(currentLmaxBin0);
+        brightness = currentRmaxBin2 * 8;
+        strip.setPixelColor(3, ((brightness*(GBin2+currentRmaxBin2*3))/255) , ((brightness*(RBin2+currentRmaxBin2*8))/255) , ((brightness*(BBin2+currentRmaxBin2*3))/255));
+        strip.show();
+      }
+      if (disX == 2 && sampleR[disX+1] < currentRmaxBin2){
+       
+        currentRmaxBin2 = currentRmaxBin2 - 1;
+        //Serial.print("decrease");
+        //Serial.println(currentLmaxBin0);
+       brightness = currentRmaxBin2 * 8;
+       strip.setPixelColor(3, ((brightness*(GBin2+currentRmaxBin2*3))/255) , ((brightness*(RBin2+currentRmaxBin2*8))/255) , ((brightness*(BBin2+currentRmaxBin2*3))/255));
        strip.show();
       }
          
@@ -239,19 +330,18 @@ void colorWipe(uint32_t c, uint8_t wait) {
       delay(wait);
   }
 }
-
-void rainbow(uint8_t wait) {
+/*
+void makeColor() {
   uint16_t i, j;
 
   for(j=0; j<256; j++) {
     for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i+j) & 255));
+      color[i] = Wheel((i+j) & 255);
+     
     }
-    strip.show();
-    delay(wait);
   }
 }
-
+*/
 // Slightly different, this makes the rainbow equally distributed throughout
 void rainbowCycle(uint8_t wait) {
   uint16_t i, j;
