@@ -53,7 +53,7 @@ int iterationsWithColorBin0 = 0;
 int iterationsWithColorBin2 = 0;
 int colorBin0 = 0;
 int colorBin2 = 0;
-int Bin0BrightnessScaler = 2;
+int Bin0BrightnessScaler = 3;
 int Bin2BrightnessScaler = 6;
 int Bin0currentFadeRate = 3;
 int Bin2currentFadeRate = 3;
@@ -87,19 +87,6 @@ void loop() {
   }
   drawSpectrum();
   endTime = millis();
-  
-  // Some example procedures showing how to display to the pixels:
-  ///colorWipe(strip.Color(0, 255, 0), 100000); // Red
-  //colorWipe(strip.Color(0, 255, 0), 50); // Green
-  //colorWipe(strip.Color(0, 0, 255), 50); // Blue
-  // Send a theater pixel chase in...
-  //theaterChase(strip.Color(127, 127, 127), 50); // White
-  //theaterChase(strip.Color(127,   0,   0), 50); // Red
-  //theaterChase(strip.Color(  0,   0, 127), 50); // Blue
-  
-  //rainbow(9000);
-  //rainbowCycle(2000);
-  //theaterChaseRainbow(50);
 }
 
 
@@ -112,54 +99,48 @@ void drawSpectrum () {
     //Serial.println(color[0]);
     for (disX; disX < 16; disX++) {
  
-   //bin 0   
-      if (disX == 0 && sampleL[disX+Bin0Binscaler] > 3 && sampleL[disX+Bin0Binscaler] > currentLmaxBin0){
+   //bin 0   Base tones
+      if (disX == 0 && sampleL[disX+Bin0Binscaler] > 3 && sampleL[disX+Bin0Binscaler] > currentLmaxBin0){ 
+        //if the amplitude of frequency component for the left channel in (bin 0 + Bin0Scaler) is greater then 3 and greater then current max. Bin0Scaler is added to allow for easy change
+       // of what frequency the Base leds are triggered by.
         
         currentLmaxBin0 = sampleL[disX+Bin0Binscaler];
+        //set new currentLmaxBin0.
         brightness = currentLmaxBin0 * Bin0BrightnessScaler;
+        //Scale brightness
         
         if(iterationsWithColorBin0 > 10){
         colornumberBin0 = colornumberBin0+(currentLmaxBin0/Bin0colorChangeRate);
+        //Every 10th sample change the color by adding current (currentLmaxBin0/Bin0colorChangeRate) This causes the colors to change quickly if the amplitude of the frequency components are high.
         if (colornumberBin0 > 255){
+          //Start over if with first color if the value is above 255.
           colornumberBin0 = 0;
         }
-        //colorBin0 = (Wheel(colornumberBin0) % 255);
-        Serial.println(currentLmaxBin0);
-        //Serial.print("GBin0 = ");
-        //Serial.println(GBin0);
-        //Serial.print("RBin0 = ");
-        //Serial.println(RBin0);
-        //Serial.print("BBin0 = ");
-        //Serial.println(BBin0);
 
         WheelBin0(colornumberBin0);
         iterationsWithColorBin0 = 0;
         }
+        
+        //If the current color value has not been used for 10 samples only change brightness.
         iterationsWithColorBin0 = iterationsWithColorBin0 + 1;
-        setPixelColorAndBrightness(brightness, 0, 0);
-        //strip.setPixelColor(0, ((brightness*(GBin0+currentLmaxBin0*3))/255) , ((brightness*(RBin0+currentLmaxBin0*8))/255) , ((brightness*(BBin0+currentLmaxBin0*3))/255));
-        //strip.show();
+        //Set the light up the pixel with desired brightness, if it is base or treble leds that should light up and what pixel number.
+        setPixelColorAndBrightness(brightness, 0, 3);
+
       }
+      //If no new max was detected then fade the pixels with a constant called fade rate
       if (disX == 0 && sampleL[disX+Bin0Binscaler] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate > 0){
        
         currentLmaxBin0 = currentLmaxBin0 - Bin0currentFadeRate;
-        //Serial.print("decrease");
-        //Serial.println(currentLmaxBin0);
-       brightness = currentLmaxBin0 * Bin0BrightnessScaler;
-       setPixelColorAndBrightness(brightness, 0, 0);
-       //strip.setPixelColor(0, ((brightness*(GBin0+currentLmaxBin0*3))/255) , ((brightness*(RBin0+currentLmaxBin0*8))/255) , ((brightness*(BBin0+currentLmaxBin0*3))/255));
-       //strip.show();
+        brightness = currentLmaxBin0 * Bin0BrightnessScaler;
+        setPixelColorAndBrightness(brightness, 0, 3);
+
       }
+      //If the current Lmax goes below 0 set turn the pixel off.
         if (disX == 0 && sampleL[disX+Bin0Binscaler] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate <= 0){
-        Serial.println("Set currentLmaxBin0 to 0");
         currentLmaxBin0 = 0;
-        Serial.println(currentLmaxBin0);
-        //Serial.print("decrease");
-        //Serial.println(currentLmaxBin0);
        brightness = currentLmaxBin0 * Bin0BrightnessScaler;
-       setPixelColorAndBrightness(brightness, 0, 0);
-       //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
-       //strip.show();
+       setPixelColorAndBrightness(brightness, 0, 3);
+
       }
       
       if (disX == 0 && sampleR[disX+Bin0Binscaler] > 3 && sampleR[disX+Bin0Binscaler] > currentRmaxBin0){
@@ -168,7 +149,7 @@ void drawSpectrum () {
         //Serial.print("increse");
         //Serial.println(currentLmaxBin0);
         brightness = currentRmaxBin0 * Bin0BrightnessScaler;
-        setPixelColorAndBrightness(brightness, 0, 1);
+        setPixelColorAndBrightness(brightness, 0, 2);
         //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
         //strip.show();
       }
@@ -179,7 +160,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentRmaxBin0 * Bin0BrightnessScaler;
-       setPixelColorAndBrightness(brightness, 0, 1);
+       setPixelColorAndBrightness(brightness, 0, 2);
        //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
        //strip.show();
       }
@@ -190,7 +171,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentRmaxBin0 * Bin0BrightnessScaler;
-       setPixelColorAndBrightness(brightness, 0, 1);
+       setPixelColorAndBrightness(brightness, 0, 2);
        //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
        //strip.show();
       }
@@ -218,7 +199,7 @@ void drawSpectrum () {
         iterationsWithColorBin2 = 0;
         }
         iterationsWithColorBin2 = iterationsWithColorBin2 + 1;
-        setPixelColorAndBrightness(brightness, 2, 2);
+        setPixelColorAndBrightness(brightness, 2, 0);
 
       
       }
@@ -228,7 +209,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentLmaxBin2 * Bin2BrightnessScaler;
-       setPixelColorAndBrightness(brightness, 2, 2);
+       setPixelColorAndBrightness(brightness, 2, 0);
       }
       
       if (disX == 0 && sampleL[disX+Bin2Binscaler] < currentLmaxBin2 && currentLmaxBin2-Bin2currentFadeRate <= 0){
@@ -238,7 +219,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentLmaxBin2 * Bin0BrightnessScaler;
-       setPixelColorAndBrightness(brightness, 2, 2);
+       setPixelColorAndBrightness(brightness, 2, 0);
        //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
        //strip.show();
       }
@@ -248,7 +229,7 @@ void drawSpectrum () {
         //Serial.print("increse");
         //Serial.println(currentLmaxBin0);
         brightness = currentRmaxBin2 * Bin2BrightnessScaler;
-         setPixelColorAndBrightness(brightness, 2, 3);
+         setPixelColorAndBrightness(brightness, 2, 1);
       }
       if (disX == 2 && sampleR[disX+Bin2Binscaler] < currentRmaxBin2  && currentRmaxBin2-Bin2currentFadeRate > 0){
        
@@ -256,7 +237,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentRmaxBin2  * Bin2BrightnessScaler;
-       setPixelColorAndBrightness(brightness, 2, 3);
+       setPixelColorAndBrightness(brightness, 2, 1);
       }
       if (disX == 0 && sampleR[disX+Bin2Binscaler] < currentRmaxBin2 && currentRmaxBin2-Bin2currentFadeRate <= 0){
         Serial.println("Set currentLmaxBin2 to 0");
@@ -265,7 +246,7 @@ void drawSpectrum () {
         //Serial.print("decrease");
         //Serial.println(currentLmaxBin0);
        brightness = currentRmaxBin2 * Bin2BrightnessScaler;
-       setPixelColorAndBrightness(brightness, 2, 3);
+       setPixelColorAndBrightness(brightness, 2, 1);
        //strip.setPixelColor(1, ((brightness*(GBin0+currentRmaxBin0*3))/255) , ((brightness*(RBin0+currentRmaxBin0*8))/255) , ((brightness*(BBin0+currentRmaxBin0*3))/255));
        //strip.show();
       }
