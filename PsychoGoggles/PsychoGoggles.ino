@@ -54,37 +54,46 @@ int iterationsWithColorBin2 = 0;
 int colorBin0 = 0;
 int colorBin2 = 0;
 int bottomLedBrightnessScaler = 3; //this value will be read from potentiometers on the front panel
-int topLedBrightnessScaler = 6;//this value will be read from potentiometers on the front panel
-int Bin0currentFadeRate = 3;
-int Bin2currentFadeRate = 3;
+int topLedBrightnessScaler = 3;//this value will be read from potentiometers on the front panel
+int Bin0currentFadeRate = 2;
+int Bin2currentFadeRate = 2;
 int Bin0colorChangeRate = 2;
 int Bin2colorChangeRate = 2;
 int Bin0Binscaler = 0;
 int Bin2Binscaler = 0;
 
 int lowerLedBin = 0; //this value will be read from potentiometers on the front panel
-int upperLedBin = 2; //this value will be read from potentiometers on the front panel
+int upperLedBin = 0; //this value will be read from potentiometers on the front panel
 
-int topLedBinPot = 4;
-int topLedBrightnessPot = 5;
-int bottomLedBinPot = 6;
-int bottomLedBrightnessPot = 7;
+int topLedBinPot = A6;
+int topLedBrightnessPot = A7;
+int bottomLedBinPot = A4;
+int bottomLedBrightnessPot = A5;
 
 void setup() {
   if (displayType == "MONO") {displaySize = 32;} else {displaySize = 16;}
   //TIMSK0 = 0; // turn off timer0 for lower jitter
-  ADCSRA = 0xe7; // set the adc to free running mode
-  ADMUX = 0x45; // use adc5
-  DIDR0 = 0x20; // turn off the digital input for adc5
+  pinMode(topLedBinPot, INPUT);
+  pinMode(topLedBrightnessPot, INPUT);
+  pinMode(bottomLedBinPot, INPUT);
+  pinMode(bottomLedBrightnessPot, INPUT);
+  //ADCSRA = 0xe7; // set the adc to free running mode
+  //ADCSRA = 0xC7; // turn off free running mode.
+  //ADMUX = 0x45; // use adc5
+  //DIDR0 = 0x20; // turn off the digital input for adc5
   Serial.begin(115200);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
+  Serial.println("Setup finished");
 
 }
 
 void loop() {
-  
+  Serial.println("Enter loop.");
+  //int potvalue = readPotsADC();
+  //Serial.println(potvalue);
   readPotentiometers();
+  
   startTime = millis();
   sampleSet = "L";
   sampleInput();
@@ -98,18 +107,29 @@ void loop() {
   endTime = millis();
 }
 
+
+
+
 void readPotentiometers() {
-
-lowerLedBin = analogRead(bottomLedBinPot);            // reads the value of the potentiometer (value between 0 and 1023) 
-lowerLedBin = map(lowerLedBin, 0, 1023, 0, 16);     // scale it to use it to select a frequency bin (value between 0 and 16)
-bottomLedBrightnessScaler = analogRead(bottomLedBrightnessPot);            // reads the value of the potentiometer (value between 0 and 1023) 
-bottomLedBrightnessScaler = map(bottomLedBrightnessScaler, 0, 1023, 0, 10);     // scale it to have better values (value between 0 and 16) 
-
-upperLedBin = analogRead(topLedBinPot);            // reads the value of the potentiometer (value between 0 and 1023) 
-upperLedBin = map(upperLedBin, 0, 1023, 0, 16);     // scale it to use it to select a frequency bin (value between 0 and 16)
-topLedBrightnessScaler = analogRead(topLedBrightnessPot);            // reads the value of the potentiometer (value between 0 and 1023) 
-topLedBrightnessScaler = map(bottomLedBrightnessScaler, 0, 1023, 0, 10);     // scale it to have better values (value between 0 and 16) 
-
+      
+  ADCSRA = 0xC7; // turn off free running mode.
+  //Serial.println("Enter read potentiometers.");
+  lowerLedBin = analogRead(bottomLedBinPot);            // reads the value of the potentiometer (value between 0 and 1023)
+  //Serial.print("Before map lowerLedBin: ");
+  //Serial.println(lowerLedBin);
+  lowerLedBin = map(lowerLedBin, 1023, 0, 0, 6);     // scale it to use it to select a frequency bin (value between 0 and 16)
+  //Serial.print("After map lowerLedBin: ");
+  //Serial.println(lowerLedBin);
+  
+  bottomLedBrightnessScaler = analogRead(bottomLedBrightnessPot);            // reads the value of the potentiometer (value between 0 and 1023) 
+  bottomLedBrightnessScaler = map(bottomLedBrightnessScaler, 1023, 0, 0, 20);     // scale it to have better values (value between 0 and 16) 
+  Serial.println(bottomLedBrightnessScaler);
+  upperLedBin = analogRead(topLedBinPot);            // reads the value of the potentiometer (value between 0 and 1023) 
+  upperLedBin = map(upperLedBin, 1023, 0, 0, 6);     // scale it to use it to select a frequency bin (value between 0 and 16)
+  
+  topLedBrightnessScaler = analogRead(topLedBrightnessPot);            // reads the value of the potentiometer (value between 0 and 1023) 
+  topLedBrightnessScaler = map(topLedBrightnessScaler, 1023, 0, 0, 10);     // scale it to have better values (value between 0 and 16) 
+  ADCSRA = 0xe7; // set the adc to free running mode
 }
 
 void drawSpectrum () {
@@ -260,6 +280,25 @@ strip.show();
   }
 }
 
+int readPotsADC(){
+    //ADCSRA = 0xe7; // set the adc to free running mode
+    ADCSRA = 0xC7; // turn off free running mode.
+    
+    lowerLedBin = analogRead(topLedBrightnessPot); 
+    /*
+    while(!(ADCSRA & 0x10)); // wait for adc to be ready
+    ADCSRA = 0xf5; // restart adc
+    ADMUX = 0x46; // use adc2
+    byte m = ADCL; // fetch adc data
+    byte j = ADCH;
+    int k = (j << 8) | m; // form into an int
+    k -= 0x0200; // form into a signed int
+    k <<= 6; // form into a 16b signed int
+    */
+    ADCSRA = 0xe7; // set the adc to free running mode
+    return lowerLedBin;
+
+}
 
 void sampleInput() {
   cli();  // UDRE interrupt slows this way down on arduino1.0
@@ -267,9 +306,11 @@ void sampleInput() {
     while(!(ADCSRA & 0x10)); // wait for adc to be ready
     ADCSRA = 0xf5; // restart adc
     if (sampleSet == "L") {
-      ADMUX = 0x41; // use adc5
+      ADMUX = 0x41; // use adc1
+      //ADMUX = 0x1; // use adc1
     } else {
-      ADMUX = 0x42; // use adc4
+      ADMUX = 0x42; // use adc2
+      //ADMUX = 0x2; // use adc2
     }
     byte m = ADCL; // fetch adc data
     byte j = ADCH;
