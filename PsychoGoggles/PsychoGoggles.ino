@@ -62,12 +62,12 @@ int Bin2colorChangeRate = 2;
 int Bin0Binscaler = 0;
 int Bin2Binscaler = 0;
 
-int lowerLedBin = 0; //this value will be read from potentiometers on the front panel
+int lowerLedBin1 = 0; //this value will be read from potentiometers on the front panel
 int upperLedBin = 0; //this value will be read from potentiometers on the front panel
 
 int topLedBinPot = A6;
 int topLedBrightnessPot = A7;
-int bottomLedBinPot = A4;
+int bottomLedBinPot1 = A0;
 int bottomLedBrightnessPot = A5;
 
 void setup() {
@@ -75,7 +75,7 @@ void setup() {
   //TIMSK0 = 0; // turn off timer0 for lower jitter
   pinMode(topLedBinPot, INPUT);
   pinMode(topLedBrightnessPot, INPUT);
-  pinMode(bottomLedBinPot, INPUT);
+  pinMode(bottomLedBinPot1, INPUT);
   pinMode(bottomLedBrightnessPot, INPUT);
   //ADCSRA = 0xe7; // set the adc to free running mode
   //ADCSRA = 0xC7; // turn off free running mode.
@@ -84,12 +84,12 @@ void setup() {
   Serial.begin(115200);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
-  Serial.println("Setup finished");
+  //Serial.println("Setup finished");
 
 }
 
 void loop() {
-  Serial.println("Enter loop.");
+  //Serial.println("Enter loop.");
   //int potvalue = readPotsADC();
   //Serial.println(potvalue);
   readPotentiometers();
@@ -111,24 +111,34 @@ void loop() {
 
 
 void readPotentiometers() {
-      
+  //ADCSRA = 0xf5; // restart adc   
   ADCSRA = 0xC7; // turn off free running mode.
+  delay(10);
+  
   //Serial.println("Enter read potentiometers.");
-  lowerLedBin = analogRead(bottomLedBinPot);            // reads the value of the potentiometer (value between 0 and 1023)
-  //Serial.print("Before map lowerLedBin: ");
-  //Serial.println(lowerLedBin);
-  lowerLedBin = map(lowerLedBin, 1023, 0, 0, 6);     // scale it to use it to select a frequency bin (value between 0 and 16)
-  //Serial.print("After map lowerLedBin: ");
-  //Serial.println(lowerLedBin);
+
   
   bottomLedBrightnessScaler = analogRead(bottomLedBrightnessPot);            // reads the value of the potentiometer (value between 0 and 1023) 
-  bottomLedBrightnessScaler = map(bottomLedBrightnessScaler, 1023, 0, 0, 20);     // scale it to have better values (value between 0 and 16) 
+  bottomLedBrightnessScaler = map(bottomLedBrightnessScaler, 1023, 0, 0, 10);     // scale it to have better values (value between 0 and 16)
+  Serial.print("After map bottomLedBrightnessScaler: ");
   Serial.println(bottomLedBrightnessScaler);
+  
+    lowerLedBin1 = analogRead(bottomLedBinPot1);            // reads the value of the potentiometer (value between 0 and 1023)
+  //Serial.print("Before map lowerLedBin: ");
+  //Serial.println(lowerLedBin);
+  lowerLedBin1 = map(lowerLedBin1, 1023, 0, 0, 6);     // scale it to use it to select a frequency bin (value between 0 and 16)
+  Serial.print("After map lowerLedBin: ");
+  Serial.println(lowerLedBin1);
+  
   upperLedBin = analogRead(topLedBinPot);            // reads the value of the potentiometer (value between 0 and 1023) 
   upperLedBin = map(upperLedBin, 1023, 0, 0, 6);     // scale it to use it to select a frequency bin (value between 0 and 16)
-  
+  Serial.print("After map upperLedBin: ");
+  Serial.println(upperLedBin);
   topLedBrightnessScaler = analogRead(topLedBrightnessPot);            // reads the value of the potentiometer (value between 0 and 1023) 
-  topLedBrightnessScaler = map(topLedBrightnessScaler, 1023, 0, 0, 10);     // scale it to have better values (value between 0 and 16) 
+  topLedBrightnessScaler = map(topLedBrightnessScaler, 1023, 0, 0, 10);     // scale it to have better values (value between 0 and 16)
+   Serial.print("After map topLedBrightnessScaler: ");
+  Serial.println(topLedBrightnessScaler);
+  //delay(1000);
   ADCSRA = 0xe7; // set the adc to free running mode
 }
 
@@ -140,11 +150,11 @@ void drawSpectrum () {
  
 
    // -------------------------------  Bottom Left led -------------------------------
-      if (disX == lowerLedBin && sampleL[disX+Bin0Binscaler] > 3 && sampleL[disX+Bin0Binscaler] > currentLmaxBin0){ 
+      if (disX == lowerLedBin1 && sampleL[disX] > 3 && sampleL[disX] > currentLmaxBin0){ 
         //if the amplitude of frequency component for the left channel in (bin 0 + Bin0Scaler) is greater then 3 and greater then current max. Bin0Scaler is added to allow for easy change
        // of what frequency the Base leds are triggered by.
         
-        currentLmaxBin0 = sampleL[disX+Bin0Binscaler];
+        currentLmaxBin0 = sampleL[disX];
         //set new currentLmaxBin0.
         brightness = currentLmaxBin0 * bottomLedBrightnessScaler;
         //Scale brightness
@@ -164,11 +174,19 @@ void drawSpectrum () {
         //If the current color value has not been used for 10 samples only change brightness.
         iterationsWithColorBin0 = iterationsWithColorBin0 + 1;
         //Set the light up the pixel with desired brightness, if it is base or treble leds that should light up and what pixel number.
+        /*
+        Serial.print("Bottom Left disx: ");
+        Serial.println(disX);
+        Serial.print("Bottom Left new current LmaxBin0: ");
+        Serial.println(currentLmaxBin0);
+        Serial.print("Bottom Left new brightness");
+        Serial.println(brightness);
         setPixelColorAndBrightness(brightness, 0, 3);
+        */
 
       }
       //If no new max was detected then fade the pixels with a constant called fade rate
-      if (disX == lowerLedBin && sampleL[disX+Bin0Binscaler] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate > 0){
+      if (disX == lowerLedBin1 && sampleL[disX] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate > 0){
        
         currentLmaxBin0 = currentLmaxBin0 - Bin0currentFadeRate;
         brightness = currentLmaxBin0 * bottomLedBrightnessScaler;
@@ -176,7 +194,7 @@ void drawSpectrum () {
 
       }
       //If the current Lmax goes below 0 set turn the pixel off.
-        if (disX == lowerLedBin && sampleL[disX+Bin0Binscaler] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate <= 0){
+        if (disX == lowerLedBin1 && sampleL[disX] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate <= 0){
         currentLmaxBin0 = 0;
        brightness = currentLmaxBin0 * bottomLedBrightnessScaler;
        setPixelColorAndBrightness(brightness, 0, 3);
@@ -184,18 +202,18 @@ void drawSpectrum () {
       }
       
    // -------------------------------  Bottom Right led -------------------------------
-      if (disX == lowerLedBin && sampleR[disX+Bin0Binscaler] > 3 && sampleR[disX+Bin0Binscaler] > currentRmaxBin0){
+      if (disX == lowerLedBin1 && sampleR[disX] > 3 && sampleR[disX] > currentRmaxBin0){
         
-        currentRmaxBin0 = sampleR[disX+Bin0Binscaler];
+        currentRmaxBin0 = sampleR[disX];
         brightness = currentRmaxBin0 * bottomLedBrightnessScaler;
         setPixelColorAndBrightness(brightness, 0, 2);
       }
-      if (disX == lowerLedBin && sampleR[disX+Bin0Binscaler] < currentRmaxBin0 && currentRmaxBin0-Bin0currentFadeRate > 0){
+      if (disX == lowerLedBin1 && sampleR[disX] < currentRmaxBin0 && currentRmaxBin0-Bin0currentFadeRate > 0){
         currentRmaxBin0 = currentRmaxBin0 - Bin0currentFadeRate;
        brightness = currentRmaxBin0 * bottomLedBrightnessScaler;
        setPixelColorAndBrightness(brightness, 0, 2);
       }
-       if (disX == lowerLedBin && sampleR[disX+Bin0Binscaler] < currentRmaxBin0 && currentRmaxBin0-Bin0currentFadeRate <= 0){
+       if (disX == lowerLedBin1 && sampleR[disX] < currentRmaxBin0 && currentRmaxBin0-Bin0currentFadeRate <= 0){
         currentRmaxBin0 = 0;
        brightness = currentRmaxBin0 * bottomLedBrightnessScaler;
        setPixelColorAndBrightness(brightness, 0, 2);
@@ -203,9 +221,9 @@ void drawSpectrum () {
       }
       
    // -------------------------------  Top Left led -------------------------------  
-      if (disX == upperLedBin && sampleL[disX+Bin2Binscaler] > 3 && sampleL[disX+Bin2Binscaler] > currentLmaxBin2){
+      if (disX == upperLedBin && sampleL[disX] > 3 && sampleL[disX] > currentLmaxBin2){
         
-        currentLmaxBin2 = sampleL[disX+Bin2Binscaler];
+        currentLmaxBin2 = sampleL[disX];
          brightness = currentLmaxBin2 * topLedBrightnessScaler;
         
         if(iterationsWithColorBin2 > 10){
@@ -218,39 +236,45 @@ void drawSpectrum () {
         iterationsWithColorBin2 = 0;
         }
         iterationsWithColorBin2 = iterationsWithColorBin2 + 1;
+        /*
+        Serial.print("Top Left disx: ");
+        Serial.println(disX);
+        Serial.print("Top Left new current LmaxBin0: ");
+        Serial.println(currentLmaxBin2);
+        Serial.print("Top Left new brightness");
+        Serial.println(brightness);
         setPixelColorAndBrightness(brightness, 2, 0);
-
+        */
       
       }
-      if (disX == upperLedBin && sampleL[disX+Bin2Binscaler] < currentLmaxBin2  && currentLmaxBin2-Bin2currentFadeRate > 0){
+      if (disX == upperLedBin && sampleL[disX] < currentLmaxBin2  && currentLmaxBin2-Bin2currentFadeRate > 0){
        
         currentLmaxBin2 = currentLmaxBin2 - Bin2currentFadeRate;
        brightness = currentLmaxBin2 * topLedBrightnessScaler;
        setPixelColorAndBrightness(brightness, 2, 0);
       }
       
-      if (disX == upperLedBin && sampleL[disX+Bin2Binscaler] < currentLmaxBin2 && currentLmaxBin2-Bin2currentFadeRate <= 0){
+      if (disX == upperLedBin && sampleL[disX] < currentLmaxBin2 && currentLmaxBin2-Bin2currentFadeRate <= 0){
         currentLmaxBin2 = 0;
-        Serial.println(currentLmaxBin2);
        brightness = currentLmaxBin2 * bottomLedBrightnessScaler;
        setPixelColorAndBrightness(brightness, 2, 0);
       }
       
        // -------------------------------  Top Right led -------------------------------  
        
-      if (disX == upperLedBin && sampleR[disX+Bin2Binscaler] > 3 && sampleR[disX+Bin2Binscaler] > currentRmaxBin2){
+      if (disX == upperLedBin && sampleR[disX] > 3 && sampleR[disX] > currentRmaxBin2){
         
-        currentRmaxBin2 = sampleR[disX+Bin2Binscaler];
+        currentRmaxBin2 = sampleR[disX];
         brightness = currentRmaxBin2 * topLedBrightnessScaler;
          setPixelColorAndBrightness(brightness, 2, 1);
       }
-      if (disX == upperLedBin && sampleR[disX+Bin2Binscaler] < currentRmaxBin2  && currentRmaxBin2-Bin2currentFadeRate > 0){
+      if (disX == upperLedBin && sampleR[disX] < currentRmaxBin2  && currentRmaxBin2-Bin2currentFadeRate > 0){
        
         currentRmaxBin2 = currentRmaxBin2 - Bin2currentFadeRate;
        brightness = currentRmaxBin2  * topLedBrightnessScaler;
        setPixelColorAndBrightness(brightness, 2, 1);
       }
-      if (disX == upperLedBin && sampleR[disX+Bin2Binscaler] < currentRmaxBin2 && currentRmaxBin2-Bin2currentFadeRate <= 0){
+      if (disX == upperLedBin && sampleR[disX] < currentRmaxBin2 && currentRmaxBin2-Bin2currentFadeRate <= 0){
         currentRmaxBin2 = 0;
        brightness = currentRmaxBin2 * topLedBrightnessScaler;
        setPixelColorAndBrightness(brightness, 2, 1);
@@ -279,12 +303,12 @@ strip.setPixelColor(pixelnumber,  ((brightness*GBin2)/255) , ((brightness*RBin2)
 strip.show();
   }
 }
-
+/*
 int readPotsADC(){
     //ADCSRA = 0xe7; // set the adc to free running mode
     ADCSRA = 0xC7; // turn off free running mode.
     
-    lowerLedBin = analogRead(topLedBrightnessPot); 
+    //lowerLedBin = analogRead(topLedBrightnessPot); 
     /*
     while(!(ADCSRA & 0x10)); // wait for adc to be ready
     ADCSRA = 0xf5; // restart adc
@@ -294,12 +318,12 @@ int readPotsADC(){
     int k = (j << 8) | m; // form into an int
     k -= 0x0200; // form into a signed int
     k <<= 6; // form into a 16b signed int
-    */
+    
     ADCSRA = 0xe7; // set the adc to free running mode
     return lowerLedBin;
 
 }
-
+*/
 void sampleInput() {
   cli();  // UDRE interrupt slows this way down on arduino1.0
   for (int x=0; x<FHT_N; x++) {
