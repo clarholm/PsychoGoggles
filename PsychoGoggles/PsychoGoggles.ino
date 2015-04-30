@@ -55,12 +55,13 @@ int colorBin0 = 0;
 int colorBin2 = 0;
 int bottomLedBrightnessScaler = 3; //this value will be read from potentiometers on the front panel
 int topLedBrightnessScaler = 3;//this value will be read from potentiometers on the front panel
-int Bin0currentFadeRate = 2;
-int Bin2currentFadeRate = 2;
+int Bin0currentFadeRate = 6;
+int Bin2currentFadeRate = 3;
 int Bin0colorChangeRate = 2;
 int Bin2colorChangeRate = 2;
 int Bin0Binscaler = 0;
 int Bin2Binscaler = 0;
+int maxBrightnessAllowed = 50;
 
 int lowerLedBin1 = 0; //this value will be read from potentiometers on the front panel
 int upperLedBin = 0; //this value will be read from potentiometers on the front panel
@@ -89,11 +90,9 @@ void setup() {
 }
 
 void loop() {
-  //Serial.println("Enter loop.");
-  //int potvalue = readPotsADC();
-  //Serial.println(potvalue);
+
   readPotentiometers();
-  
+  setBinBasedFadeRate();
   startTime = millis();
   sampleSet = "L";
   sampleInput();
@@ -108,6 +107,10 @@ void loop() {
 }
 
 
+void setBinBasedFadeRate(){
+Bin0currentFadeRate = 10 - lowerLedBin1;
+Bin2currentFadeRate = 10 - upperLedBin;
+}
 
 
 void readPotentiometers() {
@@ -119,7 +122,7 @@ void readPotentiometers() {
 
   
   bottomLedBrightnessScaler = analogRead(bottomLedBrightnessPot);            // reads the value of the potentiometer (value between 0 and 1023) 
-  bottomLedBrightnessScaler = map(bottomLedBrightnessScaler, 1023, 0, 0, 10);     // scale it to have better values (value between 0 and 16)
+  bottomLedBrightnessScaler = map(bottomLedBrightnessScaler, 1023, 0, 0, 40);     // scale it to have better values (value between 0 and 16)
   Serial.print("After map bottomLedBrightnessScaler: ");
   Serial.println(bottomLedBrightnessScaler);
   
@@ -135,11 +138,19 @@ void readPotentiometers() {
   Serial.print("After map upperLedBin: ");
   Serial.println(upperLedBin);
   topLedBrightnessScaler = analogRead(topLedBrightnessPot);            // reads the value of the potentiometer (value between 0 and 1023) 
-  topLedBrightnessScaler = map(topLedBrightnessScaler, 1023, 0, 0, 10);     // scale it to have better values (value between 0 and 16)
+  topLedBrightnessScaler = map(topLedBrightnessScaler, 1023, 0, 0, 40);     // scale it to have better values (value between 0 and 16)
    Serial.print("After map topLedBrightnessScaler: ");
   Serial.println(topLedBrightnessScaler);
   //delay(1000);
   ADCSRA = 0xe7; // set the adc to free running mode
+}
+
+boolean checkCurrentMaxToLimitBrightness(int currentMaxValue){
+if (currentMaxValue > maxBrightnessAllowed)
+{
+  return true;
+}
+else return false;
 }
 
 void drawSpectrum () {
@@ -156,7 +167,10 @@ void drawSpectrum () {
         
         currentLmaxBin0 = sampleL[disX];
         //set new currentLmaxBin0.
-        brightness = currentLmaxBin0 * bottomLedBrightnessScaler;
+        if (checkCurrentMaxToLimitBrightness(currentLmaxBin0)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+        else brightness = currentLmaxBin0 * (bottomLedBrightnessScaler/6);
         //Scale brightness
         
         if(iterationsWithColorBin0 > 10){
@@ -189,14 +203,20 @@ void drawSpectrum () {
       if (disX == lowerLedBin1 && sampleL[disX] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate > 0){
        
         currentLmaxBin0 = currentLmaxBin0 - Bin0currentFadeRate;
-        brightness = currentLmaxBin0 * bottomLedBrightnessScaler;
+        if (checkCurrentMaxToLimitBrightness(currentLmaxBin0)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+        else brightness = currentLmaxBin0 * (bottomLedBrightnessScaler/6);
         setPixelColorAndBrightness(brightness, 0, 3);
 
       }
       //If the current Lmax goes below 0 set turn the pixel off.
         if (disX == lowerLedBin1 && sampleL[disX] < currentLmaxBin0 && currentLmaxBin0-Bin0currentFadeRate <= 0){
         currentLmaxBin0 = 0;
-       brightness = currentLmaxBin0 * bottomLedBrightnessScaler;
+               if (checkCurrentMaxToLimitBrightness(currentLmaxBin0)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+       else brightness = currentLmaxBin0 * (bottomLedBrightnessScaler/6);
        setPixelColorAndBrightness(brightness, 0, 3);
 
       }
@@ -205,17 +225,27 @@ void drawSpectrum () {
       if (disX == lowerLedBin1 && sampleR[disX] > 3 && sampleR[disX] > currentRmaxBin0){
         
         currentRmaxBin0 = sampleR[disX];
-        brightness = currentRmaxBin0 * bottomLedBrightnessScaler;
+        if (checkCurrentMaxToLimitBrightness(currentLmaxBin0)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+        else brightness = currentRmaxBin0 * (bottomLedBrightnessScaler/6);
         setPixelColorAndBrightness(brightness, 0, 2);
       }
       if (disX == lowerLedBin1 && sampleR[disX] < currentRmaxBin0 && currentRmaxBin0-Bin0currentFadeRate > 0){
         currentRmaxBin0 = currentRmaxBin0 - Bin0currentFadeRate;
-       brightness = currentRmaxBin0 * bottomLedBrightnessScaler;
+        if (checkCurrentMaxToLimitBrightness(currentLmaxBin0)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+       
+       else brightness = currentRmaxBin0 * (bottomLedBrightnessScaler/6);
        setPixelColorAndBrightness(brightness, 0, 2);
       }
        if (disX == lowerLedBin1 && sampleR[disX] < currentRmaxBin0 && currentRmaxBin0-Bin0currentFadeRate <= 0){
         currentRmaxBin0 = 0;
-       brightness = currentRmaxBin0 * bottomLedBrightnessScaler;
+        if (checkCurrentMaxToLimitBrightness(currentLmaxBin0)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+       else brightness = currentRmaxBin0 * (bottomLedBrightnessScaler/6);
        setPixelColorAndBrightness(brightness, 0, 2);
 
       }
@@ -224,7 +254,7 @@ void drawSpectrum () {
       if (disX == upperLedBin && sampleL[disX] > 3 && sampleL[disX] > currentLmaxBin2){
         
         currentLmaxBin2 = sampleL[disX];
-         brightness = currentLmaxBin2 * topLedBrightnessScaler;
+         brightness = currentLmaxBin2 * (topLedBrightnessScaler/6);
         
         if(iterationsWithColorBin2 > 10){
         colornumberBin2 = colornumberBin2+(currentLmaxBin2/Bin2colorChangeRate);
@@ -250,13 +280,19 @@ void drawSpectrum () {
       if (disX == upperLedBin && sampleL[disX] < currentLmaxBin2  && currentLmaxBin2-Bin2currentFadeRate > 0){
        
         currentLmaxBin2 = currentLmaxBin2 - Bin2currentFadeRate;
-       brightness = currentLmaxBin2 * topLedBrightnessScaler;
+         if (checkCurrentMaxToLimitBrightness(currentLmaxBin2)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+       else brightness = currentLmaxBin2 * (topLedBrightnessScaler/6);
        setPixelColorAndBrightness(brightness, 2, 0);
       }
       
       if (disX == upperLedBin && sampleL[disX] < currentLmaxBin2 && currentLmaxBin2-Bin2currentFadeRate <= 0){
         currentLmaxBin2 = 0;
-       brightness = currentLmaxBin2 * bottomLedBrightnessScaler;
+          if (checkCurrentMaxToLimitBrightness(currentLmaxBin2)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+       else brightness = currentLmaxBin2 * bottomLedBrightnessScaler;
        setPixelColorAndBrightness(brightness, 2, 0);
       }
       
@@ -265,18 +301,27 @@ void drawSpectrum () {
       if (disX == upperLedBin && sampleR[disX] > 3 && sampleR[disX] > currentRmaxBin2){
         
         currentRmaxBin2 = sampleR[disX];
-        brightness = currentRmaxBin2 * topLedBrightnessScaler;
+          if (checkCurrentMaxToLimitBrightness(currentLmaxBin2)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+        else brightness = currentRmaxBin2 * (topLedBrightnessScaler/6);
          setPixelColorAndBrightness(brightness, 2, 1);
       }
       if (disX == upperLedBin && sampleR[disX] < currentRmaxBin2  && currentRmaxBin2-Bin2currentFadeRate > 0){
        
         currentRmaxBin2 = currentRmaxBin2 - Bin2currentFadeRate;
-       brightness = currentRmaxBin2  * topLedBrightnessScaler;
+          if (checkCurrentMaxToLimitBrightness(currentLmaxBin2)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+       else brightness =currentRmaxBin2 * (topLedBrightnessScaler/6);
        setPixelColorAndBrightness(brightness, 2, 1);
       }
       if (disX == upperLedBin && sampleR[disX] < currentRmaxBin2 && currentRmaxBin2-Bin2currentFadeRate <= 0){
         currentRmaxBin2 = 0;
-       brightness = currentRmaxBin2 * topLedBrightnessScaler;
+          if (checkCurrentMaxToLimitBrightness(currentLmaxBin2)== true){
+        brightness = maxBrightnessAllowed * (bottomLedBrightnessScaler/6);
+        }
+       else brightness = currentRmaxBin2 * (topLedBrightnessScaler/6);
        setPixelColorAndBrightness(brightness, 2, 1);
       }
       
@@ -297,6 +342,8 @@ void setPixelColorAndBrightness(int brightness, int bin, int pixelnumber){
   if (bin == 0){
 strip.setPixelColor(pixelnumber,  ((brightness*GBin0)/255) , ((brightness*RBin0)/255) , ((brightness*BBin0)/255));
 strip.show();
+Serial.print("Brightness bin 0");
+Serial.println(brightness);
   }
   else if (bin == 2){
 strip.setPixelColor(pixelnumber,  ((brightness*GBin2)/255) , ((brightness*RBin2)/255) , ((brightness*BBin2)/255));
